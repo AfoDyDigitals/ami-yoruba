@@ -50,7 +50,6 @@ def menyo():
 
 SOURCES = {
     "menyo": menyo(),
-    "yorubablog": lines("yoruba-text/TheYorubaBlog/*.txt"),
     "lagos_nwu": lines("yoruba-text/LagosNWU/**/*.txt", skip=("README",)),
     "proverbs": lines("yoruba-text/Owe/**/*.txt"),
 }
@@ -61,7 +60,7 @@ if RELIGIOUS:
 
 test = list(dict.fromkeys(nfc(l) for l in open(RAW + "yoruba-text/Iroyin/yoglobalvoices.txt", encoding="utf-8") if l.strip()))
 seen = {strip(t) for t in test}
-train, kept, total, why, dropped = [], Counter(), Counter(), Counter(), []
+train, origin, kept, total, why, share, dropped = [], [], Counter(), Counter(), Counter(), Counter(), []
 for name, src in SOURCES.items():
     for raw in src:
         for s in sentences(nfc(raw)):
@@ -77,12 +76,16 @@ for name, src in SOURCES.items():
                 continue
             seen.add(strip(s))
             train.append(s)
+            origin.append(name)
             kept[name] += 1
+            share[name] += marked_share(s)
 
 open("data/train_raw.txt", "w").write("\n".join(train) + "\n")
+open("data/train_sources.txt", "w").write("\n".join(origin) + "\n")
 open("data/test_raw.txt", "w").write("\n".join(test) + "\n")
 for name in SOURCES:
-    print(f"{name:11} kept {kept[name]:6} of {total[name]:6} sentences")
+    print(f"{name:11} kept {kept[name]:6} of {total[name]:6} sentences, "
+          f"{share[name] / max(kept[name], 1):.0%} of words marked on average")
 print("dropped:", dict(why))
 print(f"\nTRAIN {len(train)} sentences, {sum(len(s.split()) for s in train):,} words")
 print(f"TEST  {len(test)} sentences, {sum(len(s.split()) for s in test):,} words")
