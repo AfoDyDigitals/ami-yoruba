@@ -1,3 +1,5 @@
 data/raw/
 .DS_Store
 data/*_raw.txt
+data/train_sources.txt
+data/*.tsv
